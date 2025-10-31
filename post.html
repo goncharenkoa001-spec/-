@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пост блога - ЗАБАВЫ РАДИ</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Стили для медиа контента */
+        .media-section {
+            margin: 2.5rem 0;
+            padding: 1.5rem;
+            background: #1a2837;
+            border-radius: 10px;
+            border: 1px solid #2a3b4d;
+        }
+
+        .media-section h3 {
+            color: #ffffff;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+            border-bottom: 1px solid #2a3b4d;
+            padding-bottom: 0.5rem;
+        }
+
+        .media-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .media-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .media-item img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            cursor: zoom-in;
+            transition: transform 0.3s ease;
+            border: 2px solid #2a3b4d;
+        }
+
+        .media-item img:hover {
+            transform: scale(1.02);
+        }
+
+        .media-item video {
+            max-width: 100%;
+            border-radius: 8px;
+            background: #000;
+        }
+
+        .media-item audio {
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+
+        .audio-item {
+            background: #17212b;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #2a3b4d;
+        }
+
+        .media-filename {
+            color: #7f91a4;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        .post-text-content {
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            color: #c5c5c5;
+        }
+
+        .post-text-content p {
+            margin-bottom: 1rem;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <img src="logo.png" alt="Логотип" class="logo-img">
+            </a>
+            <div class="header-text">
+                <h1>ЗАБАВЫ РАДИ</h1>
+                <p>Рисунки, игра на музыкальных инструментах и моменты из жизни.</p>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <a href="index.html">Все посты</a>
+        <a href="gallery.html">Галерея</a>
+        <a href="about.html">Обо мне</a>
+    </nav>
+
+    <main>
+        <article class="post-content" id="post-content">
+            <!-- Пост будет загружен через JavaScript -->
+        </article>
+
+        <!-- Секция комментариев -->
+        <section class="comments-section" id="comments-section">
+            <h3>💬 Комментарии</h3>
+            
+            <!-- Форма добавления комментария -->
+            <div class="comment-form">
+                <div class="form-group">
+                    <input type="text" id="comment-author" class="form-control" placeholder="Ваше имя (необязательно)">
+                </div>
+                <div class="form-group">
+                    <textarea id="comment-text" class="form-control" placeholder="Ваш комментарий..." rows="3"></textarea>
+                </div>
+                <button onclick="addComment()" class="btn">📨 Отправить комментарий</button>
+            </div>
+
+            <!-- Список комментариев -->
+            <div class="comments-list" id="comments-list">
+                <!-- Комментарии будут здесь -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>t.me/cortel142</p>
+    </footer>
+
+    <script src="comments.js"></script>
+    <script>
+        // Функции для полноэкранного просмотра
+        function openFullscreen(imgSrc, altText) {
+            const fullscreenDiv = document.createElement('div');
+            fullscreenDiv.className = 'image-fullscreen';
+            fullscreenDiv.innerHTML = `
+                <button class="image-fullscreen-close" onclick="closeFullscreen()">×</button>
+                <img src="${imgSrc}" alt="${altText}">
+            `;
+            
+            document.body.appendChild(fullscreenDiv);
+            
+            fullscreenDiv.addEventListener('click', function(e) {
+                if (e.target === fullscreenDiv) {
+                    closeFullscreen();
+                }
+            });
+            
+            document.addEventListener('keydown', function closeOnEsc(e) {
+                if (e.key === 'Escape') {
+                    closeFullscreen();
+                    document.removeEventListener('keydown', closeOnEsc);
+                }
+            });
+            
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeFullscreen() {
+            const fullscreen = document.querySelector('.image-fullscreen');
+            if (fullscreen) {
+                fullscreen.remove();
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Загрузка конкретного поста с медиа
+        const urlParams = new URLSearchParams(window.location.search);
+        const postId = urlParams.get('id');
+        const posts = JSON.parse(localStorage.getItem('blogPosts')) || [];
+        const post = posts.find(p => p.id === postId);
+
+        function renderMediaContent(post) {
+            let mediaHTML = '';
+            
+            // Дополнительные фото
+            if (post.images && post.images.length > 0) {
+                mediaHTML += '<div class="media-section">';
+                mediaHTML += '<h3>📷 Фотографии</h3>';
+                post.images.forEach((imageUrl, index) => {
+                    if (imageUrl && imageUrl.trim()) {
+                        mediaHTML += `
+                            <div class="media-item">
+                                <img src="${imageUrl}" alt="Фото ${index + 1}" onclick="openFullscreen('${imageUrl}', 'Фото ${index + 1}')">
+                            </div>
+                        `;
+                    }
+                });
+                mediaHTML += '</div>';
+            }
+            
+            // Видео
+            if (post.videos && post.videos.length > 0) {
+                mediaHTML += '<div class="media-section">';
+                mediaHTML += '<h3>🎥 Видео</h3>';
+                post.videos.forEach((videoUrl, index) => {
+                    if (videoUrl && videoUrl.trim()) {
+                        mediaHTML += `
+                            <div class="media-item">
+                                <video controls>
+                                    <source src="${videoUrl}" type="video/mp4">
+                                    Ваш браузер не поддерживает видео.
+                                </video>
+                                <div class="media-filename">${videoUrl.split('/').pop()}</div>
+                            </div>
+                        `;
+                    }
+                });
+                mediaHTML += '</div>';
+            }
+            
+            // Аудио
+            if (post.audios && post.audios.length > 0) {
+                mediaHTML += '<div class="media-section">';
+                mediaHTML += '<h3>🎵 Аудио</h3>';
+                post.audios.forEach((audioUrl, index) => {
+                    if (audioUrl && audioUrl.trim()) {
+                        const filename = audioUrl.split('/').pop();
+                        mediaHTML += `
+                            <div class="media-item audio-item">
+                                <audio controls>
+                                    <source src="${audioUrl}" type="audio/mpeg">
+                                    Ваш браузер не поддерживает аудио.
+                                </audio>
+                                <div class="media-filename">${filename}</div>
+                            </div>
+                        `;
+                    }
+                });
+                mediaHTML += '</div>';
+            }
+            
+            return mediaHTML;
+        }
+
+        // Функции для комментариев
+        function addComment() {
+            const author = document.getElementById('comment-author').value;
+            const text = document.getElementById('comment-text').value;
+            const postId = new URLSearchParams(window.location.search).get('id');
+
+            if (!text.trim()) {
+                alert('Введите текст комментария');
+                return;
+            }
+
+            const comment = commentsSystem.addComment(postId, author, text);
+            renderComments();
+            
+            // Очищаем форму
+            document.getElementById('comment-text').value = '';
+            if (!author) {
+                document.getElementById('comment-author').value = '';
+            }
+            
+            // Показываем уведомление
+            showCommentNotification('Комментарий добавлен!');
+        }
+
+        function renderComments() {
+            const postId = new URLSearchParams(window.location.search).get('id');
+            const comments = commentsSystem.getComments(postId);
+            const commentsList = document.getElementById('comments-list');
+            
+            if (comments.length === 0) {
+                commentsList.innerHTML = '<div class="no-comments">Пока нет комментариев. Будьте первым!</div>';
+                return;
+            }
+            
+            commentsList.innerHTML = comments.map(comment => `
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <span class="comment-author">${comment.author}</span>
+                        <span class="comment-date">${comment.date}</span>
+                    </div>
+                    <p class="comment-text">${comment.text}</p>
+                </div>
+            `).join('');
+        }
+
+        function showCommentNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #27ae60;
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 6px;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        if (post) {
+            const mediaContent = renderMediaContent(post);
+            document.getElementById('post-content').innerHTML = `
+                <a href="index.html" class="back-link">← Назад к списку постов</a>
+                <h1>${post.title}</h1>
+                <p class="post-date">Опубликовано: ${post.date}</p>
+                <div class="post-text-content">
+                    ${post.content.replace(/\n/g, '<br>')}
+                </div>
+                ${mediaContent}
+            `;
+            document.title = `${post.title} - ЗАБАВЫ РАДИ`;
+        } else {
+            document.getElementById('post-content').innerHTML = `
+                <a href="index.html" class="back-link">← Назад к списку постов</a>
+                <h1>Пост не найден</h1>
+                <p>Запрошенный пост не существует или был удален.</p>
+            `;
+        }
+
+        // Загружаем комментарии при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            renderComments();
+            
+            // Добавляем обработчики для картинок в посте
+            const postImages = document.querySelectorAll('.media-item img');
+            postImages.forEach(img => {
+                img.style.cursor = 'zoom-in';
+                img.addEventListener('click', function() {
+                    openFullscreen(this.src, this.alt);
+                });
+            });
+        });
+    </script>
+
+    <script>
+        function updateHeaderHeights() {
+            const header = document.querySelector('header');
+            const nav = document.querySelector('nav');
+            const main = document.querySelector('main');
+            
+            if (header && nav && main) {
+                const headerHeight = header.offsetHeight;
+                const navHeight = nav.offsetHeight;
+                
+                document.body.style.paddingTop = headerHeight + 'px';
+                nav.style.top = headerHeight + 'px';
+                main.style.marginTop = navHeight + 20 + 'px';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            updateHeaderHeights();
+            window.addEventListener('resize', updateHeaderHeights);
+            setTimeout(updateHeaderHeights, 200);
+        });
+    </script>
+</body>
+</html>

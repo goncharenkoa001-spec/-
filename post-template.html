@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Название поста - Мой Блог</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <header>
+        <h1>Мой Личный Блог</h1>
+        <p>Здесь я делюсь своими мыслями и идеями</p>
+    </header>
+
+    <nav>
+        <a href="../index.html">Главная</a>
+        <a href="../index.html#about">Обо мне</a>
+    </nav>
+
+    <main>
+        <article class="post-content">
+            <a href="../index.html" class="back-link">← Назад к списку постов</a>
+            
+            <h1>Название вашего поста</h1>
+            <p class="post-date">Опубликовано: Дата публикации</p>
+            
+            <!-- ВСТАВЬТЕ ВАШ ТЕКСТ ЗДЕСЬ -->
+            <p>Это первый абзац вашего поста. Напишите здесь вступление.</p>
+            
+            <p>А это второй абзац. Продолжайте писать ваш текст здесь.</p>
+            
+            <!-- ВСТАВЬТЕ ВАШУ КАРТИНКУ ЗДЕСЬ -->
+            <img src="../images/ваша-картинка.jpg" alt="Описание картинки">
+            
+            <p>Текст под картинкой. Расскажите о том, что на фото.</p>
+            
+            <p>Завершающая часть вашего поста.</p>
+        </article>
+    </main>
+
+    <footer>
+        <p>© 2024 Мой Личный Блог. Все права защищены.</p>
+    </footer>
+    <script>
+    // Подсветка активной вкладки для всех страниц
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+        const navLinks = document.querySelectorAll('nav a');
+        
+        navLinks.forEach(link => {
+            const linkPage = link.getAttribute('href');
+            if (currentPage === linkPage || 
+                (currentPage === '' && linkPage === 'index.html') ||
+                (currentPage.includes(linkPage.replace('.html', '')))) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+        
+        // Применяем масштабирование
+        setTimeout(() => {
+            document.body.style.transform = 'scale(0.95)';
+            document.body.style.transformOrigin = 'top center';
+        }, 100);
+    });
+</script>
+</body>
+</html>

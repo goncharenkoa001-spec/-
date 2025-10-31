@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Галерея - ЗАБАВЫ РАДИ</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .gallery-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .gallery-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .sort-btn {
+            background: #1a2837;
+            color: #7f91a4;
+            border: 1px solid #2a3b4d;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sort-btn.active {
+            background: #5682a3;
+            color: #ffffff;
+        }
+
+        .gallery-stats {
+            color: #7f91a4;
+            font-size: 0.9rem;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .gallery-group {
+            display: contents;
+        }
+
+        .gallery-item {
+            background: #17212b;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #1a2837;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            cursor: zoom-in;
+        }
+
+        .gallery-info {
+            padding: 0.5rem;
+        }
+
+        .gallery-post-link {
+            color: #5682a3;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: color 0.2s ease;
+            display: block;
+            text-align: center;
+        }
+
+        .gallery-post-link:hover {
+            color: #6b9bc7;
+        }
+
+        .no-images {
+            text-align: center;
+            color: #7f91a4;
+            padding: 3rem;
+            grid-column: 1 / -1;
+        }
+
+        /* Пагинация */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            background: #1a2837;
+            color: #7f91a4;
+            border: 1px solid #2a3b4d;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .page-btn:hover {
+            background: #2a3b4d;
+            color: #ffffff;
+        }
+
+        .page-btn.active {
+            background: #5682a3;
+            color: #ffffff;
+        }
+
+        .page-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .gallery-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 0.8rem;
+            }
+            
+            .gallery-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .gallery-image {
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <img src="logo.png" alt="Логотип" class="logo-img">
+            </a>
+            <div class="header-text">
+                <h1>ЗАБАВЫ РАДИ</h1>
+                <p>Галерея рисунков и фотографий</p>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <a href="index.html">Все посты</a>
+        <a href="gallery.html" class="active">Галерея</a>
+        <a href="about.html">Обо мне</a>
+    </nav>
+
+    <main class="gallery-container">
+        <div class="gallery-controls">
+            <div class="sort-controls">
+                <button class="sort-btn active" data-sort="newest">Сначала новые</button>
+                <button class="sort-btn" data-sort="oldest">Сначала старые</button>
+            </div>
+            <div class="gallery-stats" id="gallery-stats">
+                Загрузка...
+            </div>
+        </div>
+
+        <div class="pagination" id="pagination-top"></div>
+
+        <div class="gallery-grid" id="gallery-grid">
+            <!-- Изображения будут здесь -->
+        </div>
+
+        <div class="pagination" id="pagination-bottom"></div>
+    </main>
+
+    <footer>
+        <p>t.me/cortel142</p>
+    </footer>
+
+    <script>
+        class GalleryManager {
+            constructor() {
+                this.imagesPerPage = 30;
+                this.currentPage = 1;
+                this.currentSort = 'newest';
+                this.allImages = [];
+                this.init();
+            }
+
+            init() {
+                this.loadImages();
+                this.setupEventListeners();
+            }
+
+            loadImages() {
+                const posts = JSON.parse(localStorage.getItem('blogPosts')) || [];
+                this.allImages = [];
+
+                posts.forEach(post => {
+                    // Только дополнительные фото (без превью)
+                    if (post.images && post.images.length > 0) {
+                        post.images.forEach(imageUrl => {
+                            if (imageUrl && imageUrl.trim()) {
+                                this.allImages.push({
+                                    url: imageUrl,
+                                    postId: post.id,
+                                    postTitle: post.title,
+                                    date: post.date,
+                                    timestamp: new Date(post.createdAt).getTime(),
+                                    type: 'additional'
+                                });
+                            }
+                        });
+                    }
+                });
+
+                this.applySorting();
+                this.renderGallery();
+                this.updateStats();
+            }
+
+            applySorting() {
+                if (this.currentSort === 'newest') {
+                    this.allImages.sort((a, b) => b.timestamp - a.timestamp);
+                } else {
+                    this.allImages.sort((a, b) => a.timestamp - b.timestamp);
+                }
+            }
+
+            updateStats() {
+                const stats = document.getElementById('gallery-stats');
+                const uniquePosts = [...new Set(this.allImages.map(img => img.postId))];
+                stats.textContent = `Изображений: ${this.allImages.length} | Постов: ${uniquePosts.length}`;
+            }
+
+            renderGallery() {
+                const startIndex = (this.currentPage - 1) * this.imagesPerPage;
+                const endIndex = startIndex + this.imagesPerPage;
+                const pageImages = this.allImages.slice(startIndex, endIndex);
+                
+                this.renderImages(pageImages);
+                this.renderPagination();
+            }
+
+            renderImages(images) {
+                const galleryGrid = document.getElementById('gallery-grid');
+                
+                if (images.length === 0) {
+                    galleryGrid.innerHTML = `
+                        <div class="no-images">
+                            <h3>Пока нет изображений</h3>
+                            <p>Добавьте фото в посты через админ-панель</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const groupedImages = this.groupImagesByPost(images);
+                
+                galleryGrid.innerHTML = Object.values(groupedImages).map(group => `
+                    <div class="gallery-group">
+                        ${group.images.map(image => `
+                            <div class="gallery-item">
+                                <img src="${image.url}" alt="${group.postTitle}" 
+                                     class="gallery-image"
+                                     onclick="openFullscreen('${image.url}', '${group.postTitle}')">
+                                <div class="gallery-info">
+                                    <a href="post.html?id=${group.postId}" class="gallery-post-link">
+                                        📝 Перейти к посту
+                                    </a>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `).join('');
+            }
+
+            groupImagesByPost(images) {
+                const groups = {};
+                
+                images.forEach(image => {
+                    if (!groups[image.postId]) {
+                        groups[image.postId] = {
+                            postId: image.postId,
+                            postTitle: image.postTitle,
+                            images: []
+                        };
+                    }
+                    groups[image.postId].images.push(image);
+                });
+                
+                return groups;
+            }
+
+            renderPagination() {
+                const totalPages = Math.ceil(this.allImages.length / this.imagesPerPage);
+                const paginationTop = document.getElementById('pagination-top');
+                const paginationBottom = document.getElementById('pagination-bottom');
+                
+                if (totalPages <= 1) {
+                    paginationTop.innerHTML = '';
+                    paginationBottom.innerHTML = '';
+                    return;
+                }
+                
+                const paginationHTML = this.createPaginationHTML(totalPages);
+                paginationTop.innerHTML = paginationHTML;
+                paginationBottom.innerHTML = paginationHTML;
+            }
+
+            createPaginationHTML(totalPages) {
+                let html = '';
+                
+                if (this.currentPage > 1) {
+                    html += `<button class="page-btn" onclick="gallery.goToPage(${this.currentPage - 1})">← Назад</button>`;
+                } else {
+                    html += `<button class="page-btn disabled">← Назад</button>`;
+                }
+                
+                const startPage = Math.max(1, this.currentPage - 2);
+                const endPage = Math.min(totalPages, startPage + 4);
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    if (i === this.currentPage) {
+                        html += `<button class="page-btn active">${i}</button>`;
+                    } else {
+                        html += `<button class="page-btn" onclick="gallery.goToPage(${i})">${i}</button>`;
+                    }
+                }
+                
+                if (this.currentPage < totalPages) {
+                    html += `<button class="page-btn" onclick="gallery.goToPage(${this.currentPage + 1})">Вперед →</button>`;
+                } else {
+                    html += `<button class="page-btn disabled">Вперед →</button>`;
+                }
+                
+                return html;
+            }
+
+            goToPage(page) {
+                this.currentPage = page;
+                this.renderGallery();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            changeSort(sortType) {
+                this.currentSort = sortType;
+                this.currentPage = 1;
+                
+                document.querySelectorAll('.sort-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`[data-sort="${sortType}"]`).classList.add('active');
+                
+                this.applySorting();
+                this.renderGallery();
+            }
+
+            setupEventListeners() {
+                document.querySelectorAll('.sort-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.changeSort(btn.dataset.sort);
+                    });
+                });
+            }
+        }
+
+        const gallery = new GalleryManager();
+
+       function openFullscreen(imgSrc, altText) {
+    // Блокируем скролл
+    document.body.classList.add('no-scroll');
+    
+    const fullscreenDiv = document.createElement('div');
+    fullscreenDiv.className = 'image-fullscreen';
+    fullscreenDiv.innerHTML = `
+        <button class="image-fullscreen-close" onclick="closeFullscreen()">×</button>
+        <img src="${imgSrc}" alt="${altText}">
+    `;
+    
+    document.body.appendChild(fullscreenDiv);
+    
+    // Закрытие по клику на фон
+    fullscreenDiv.addEventListener('click', function(e) {
+        if (e.target === fullscreenDiv) {
+            closeFullscreen();
+        }
+    });
+    
+    // Закрытие по ESC
+    document.addEventListener('keydown', function closeOnEsc(e) {
+        if (e.key === 'Escape') {
+            closeFullscreen();
+            document.removeEventListener('keydown', closeOnEsc);
+        }
+    });
+}
+
+function closeFullscreen() {
+    const fullscreen = document.querySelector('.image-fullscreen');
+    if (fullscreen) {
+        fullscreen.remove();
+        // Разблокируем скролл
+        document.body.classList.remove('no-scroll');
+    }
+}
+        
+        function closeFullscreen() {
+            const fullscreen = document.querySelector('.image-fullscreen');
+            if (fullscreen) {
+                fullscreen.remove();
+                document.body.style.overflow = '';
+            }
+        }
+    </script>
+
+    <script>
+        function updateHeaderHeights() {
+            const header = document.querySelector('header');
+            const nav = document.querySelector('nav');
+            const main = document.querySelector('main');
+            
+            if (header && nav && main) {
+                const headerHeight = header.offsetHeight;
+                const navHeight = nav.offsetHeight;
+                
+                document.body.style.paddingTop = headerHeight + 'px';
+                nav.style.top = headerHeight + 'px';
+                main.style.marginTop = navHeight + 20 + 'px';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            updateHeaderHeights();
+            window.addEventListener('resize', updateHeaderHeights);
+            setTimeout(updateHeaderHeights, 200);
+        });
+    </script>
+</body>
+</html>

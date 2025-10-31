@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Обо мне - ЗАБАВЫ РАДИ</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .about-page {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .about-content {
+            background: #17212b;
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid #1a2837;
+            line-height: 1.6;
+        }
+        
+        .about-content h2 {
+            color: #ffffff;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #5682a3;
+            padding-bottom: 0.5rem;
+        }
+        
+        .about-content p {
+            margin-bottom: 1.5rem;
+            color: #c5c5c5;
+        }
+        
+        .telegram-link {
+            display: inline-block;
+            background: #5682a3;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 1rem;
+            transition: background-color 0.2s ease;
+        }
+        
+        .telegram-link:hover {
+            background: #6b9bc7;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <img src="logo.png" alt="Логотип" class="logo-img">
+            </a>
+            <div class="header-text">
+                <h1>ЗАБАВЫ РАДИ</h1>
+                <p>Обо мне</p>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <a href="index.html">Все посты</a>
+        <a href="gallery.html">Галерея</a>
+        <a href="about.html" class="active">Обо мне</a>
+    </nav>
+
+    <main class="about-page">
+        <section class="about-content">
+            <h2>Обо мне</h2>
+            <p>По жизни мне и так нечего делать, так что буду делиться своим творчеством в этом сайте. Да, не знаю кому вообще будет интересно это так что веду его чисто для себя.</p>
+            
+            <p>Буду кидать сюда свои рисунки, видео и аудио каверы на бас гитаре в основном и может быть на других инструментах если они у меня будут вообще).</p>
+            
+            <p>Так же у меня есть телеграм канал куда я и заливаю все эти же посты. Может быть чисто сюда буду завозить какого нибудь эксклюзивчика.</p>
+            
+            <a href="https://t.me/cortel142" class="telegram-link" target="_blank">Перейти в Telegram канал →</a>
+        </section>
+    </main>
+
+    <footer>
+        <p>t.me/cortel142</p>
+    </footer>
+
+    <script>
+        function updateHeaderHeights() {
+            const header = document.querySelector('header');
+            const nav = document.querySelector('nav');
+            const main = document.querySelector('main');
+            
+            if (header && nav && main) {
+                const headerHeight = header.offsetHeight;
+                const navHeight = nav.offsetHeight;
+                
+                document.body.style.paddingTop = headerHeight + 'px';
+                nav.style.top = headerHeight + 'px';
+                main.style.marginTop = navHeight + 20 + 'px';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            updateHeaderHeights();
+            window.addEventListener('resize', updateHeaderHeights);
+            setTimeout(updateHeaderHeights, 200);
+        });
+    </script>
+</body>
+</html>

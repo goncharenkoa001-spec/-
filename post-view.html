@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Предпросмотр поста</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div style="max-width: 800px; margin: 50px auto; padding: 2rem; background: #17212b; border-radius: 10px;">
+        <h2 style="text-align: center; margin-bottom: 2rem; color: #ffffff;">Предпросмотр поста</h2>
+        <div id="post-preview-content" style="color: #c5c5c5; line-height: 1.6;">
+            <!-- Контент поста будет здесь -->
+        </div>
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="admin.html" style="background: #5682a3; color: white; padding: 0.75rem 1.5rem; border-radius: 6px; text-decoration: none;">Вернуться в админку</a>
+        </div>
+    </div>
+
+    <script>
+        // Загрузка поста из localStorage
+        const postData = JSON.parse(localStorage.getItem('currentViewPost'));
+        
+        if (postData) {
+            document.getElementById('post-preview-content').innerHTML = `
+                <h3 style="color: #ffffff; margin-bottom: 1rem;">${postData.title}</h3>
+                <p style="color: #7f91a4; margin-bottom: 1.5rem;">Опубликовано: ${postData.date}</p>
+                <div style="margin-bottom: 1.5rem;">
+                    ${postData.content.replace(/\n/g, '<br>')}
+                </div>
+                ${postData.previewImage ? `
+                <div style="margin: 1.5rem 0;">
+                    <img src="${postData.previewImage}" alt="${postData.title}" style="max-width: 100%; border-radius: 8px;">
+                </div>
+                ` : ''}
+            `;
+        } else {
+            document.getElementById('post-preview-content').innerHTML = '<p>Пост не найден</p>';
+        }
+    </script>
+</body>
+</html>

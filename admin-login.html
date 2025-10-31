@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход в админку</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div style="max-width: 400px; margin: 100px auto; padding: 2rem; background: #17212b; border-radius: 10px;">
+        <h2 style="text-align: center; margin-bottom: 2rem;">Вход в админку</h2>
+        <input type="password" id="password" placeholder="Введите пароль" style="width: 100%; padding: 1rem; margin-bottom: 1rem; background: #1a2837; border: 1px solid #2a3b4d; color: white; border-radius: 6px;">
+        <button onclick="login()" style="width: 100%; padding: 1rem; background: #5682a3; color: white; border: none; border-radius: 6px; cursor: pointer;">Войти</button>
+    </div>
+
+    <script>
+        function login() {
+            const password = document.getElementById('password').value;
+            if (password === 'myblog123') {
+                localStorage.setItem('adminPassword', password);
+                window.location.href = 'admin.html';
+            } else {
+                alert('Неверный пароль');
+            }
+        }
+    </script>
+</body>
+</html>

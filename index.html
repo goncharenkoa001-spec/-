@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Все посты - ЗАБАВЫ РАДИ</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Пагинация */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .pagination-top {
+            margin-bottom: 1rem;
+        }
+
+        .pagination-bottom {
+            margin-top: 2rem;
+        }
+
+        .page-btn {
+            background: #1a2837;
+            color: #7f91a4;
+            border: 1px solid #2a3b4d;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .page-btn:hover {
+            background: #2a3b4d;
+            color: #ffffff;
+        }
+
+        .page-btn.active {
+            background: #5682a3;
+            color: #ffffff;
+            border-color: #5682a3;
+        }
+
+        .page-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-btn.disabled:hover {
+            background: #1a2837;
+            color: #7f91a4;
+        }
+
+        /* Контролы сортировки */
+        .posts-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .sort-btn {
+            background: #1a2837;
+            color: #7f91a4;
+            border: 1px solid #2a3b4d;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .sort-btn.active {
+            background: #5682a3;
+            color: #ffffff;
+            border-color: #5682a3;
+        }
+
+        .sort-btn:hover {
+            background: #2a3b4d;
+            color: #ffffff;
+        }
+
+        .posts-info {
+            color: #7f91a4;
+            font-size: 0.9rem;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .posts-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .sort-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .page-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <img src="logo.png" alt="Логотип" class="logo-img">
+            </a>
+            <div class="header-text">
+                <h1>ЗАБАВЫ РАДИ</h1>
+                <p>Рисунки, игра на музыкальных инструментах и моменты из жизни.</p>
+            </div>
+        </div>
+    </header>
+
+    <nav>
+        <a href="index.html" class="active">Все посты</a>
+        <a href="gallery.html">Галерея</a>
+        <a href="about.html">Обо мне</a>
+    </nav>
+
+    <main>
+        <section class="posts-list">
+            <h2>Все посты</h2>
+            
+            <div class="posts-controls">
+                <div class="sort-controls">
+                    <button class="sort-btn active" data-sort="newest">Сначала новые</button>
+                    <button class="sort-btn" data-sort="oldest">Сначала старые</button>
+                </div>
+                <div class="posts-info">
+                    Всего постов: <span id="total-posts">0</span>
+                </div>
+            </div>
+
+            <div class="pagination pagination-top" id="pagination-top"></div>
+            
+            <div id="dynamic-posts">
+                <!-- Посты будут загружаться здесь -->
+            </div>
+
+            <div id="no-posts-message" style="display: none;">
+                <article class="post-preview">
+                    <div class="post-content-wrapper">
+                        <div class="post-text">
+                            <h3>Пока нет записей</h3>
+                            <p>Блог находится в разработке. Скоро здесь появятся интересные статьи!</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="pagination pagination-bottom" id="pagination-bottom"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>t.me/cortel142</p>
+    </footer>
+
+    <script src="reactions.js"></script>
+    <script>
+        class BlogPagination {
+            constructor() {
+                this.postsPerPage = 20;
+                this.currentPage = 1;
+                this.currentSort = 'newest';
+                this.posts = [];
+                this.init();
+            }
+
+            init() {
+                this.loadPosts();
+                this.setupEventListeners();
+            }
+
+            loadPosts() {
+                this.posts = JSON.parse(localStorage.getItem('blogPosts')) || [];
+                this.updatePostsInfo();
+                this.applySorting();
+                this.renderPage();
+            }
+
+            applySorting() {
+                if (this.currentSort === 'newest') {
+                    this.posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                } else {
+                    this.posts.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                }
+            }
+
+            updatePostsInfo() {
+                document.getElementById('total-posts').textContent = this.posts.length;
+            }
+
+            renderPage() {
+                const startIndex = (this.currentPage - 1) * this.postsPerPage;
+                const endIndex = startIndex + this.postsPerPage;
+                const pagePosts = this.posts.slice(startIndex, endIndex);
+                
+                this.renderPosts(pagePosts);
+                this.renderPagination();
+            }
+
+            renderPosts(posts) {
+                const dynamicPosts = document.getElementById('dynamic-posts');
+                const noPostsMessage = document.getElementById('no-posts-message');
+                
+                dynamicPosts.innerHTML = '';
+                
+                if (posts.length === 0) {
+                    noPostsMessage.style.display = 'block';
+                    return;
+                }
+                
+                noPostsMessage.style.display = 'none';
+                
+                posts.forEach(post => {
+                    const postElement = document.createElement('article');
+                    postElement.className = 'post-preview';
+                    
+                    const previewImage = post.previewImage || post.image;
+                    const reactions = reactionsSystem.getReactions(post.id);
+                    const userVote = reactionsSystem.getUserVote(post.id);
+                    
+                    postElement.innerHTML = `
+                        <div class="post-content-wrapper">
+                            <div class="post-text">
+                                <h3><a href="post.html?id=${post.id}">${post.title}</a></h3>
+                                <p class="post-date">${post.date}</p>
+                                <p>${post.preview}</p>
+                                
+                                <div class="post-reactions">
+                                    <button class="reaction-btn like-btn ${userVote === 'likes' ? 'active' : ''}" onclick="addReaction('${post.id}', 'likes')">
+                                        👍 <span class="reaction-count">${reactions.likes}</span>
+                                    </button>
+                                    <button class="reaction-btn dislike-btn ${userVote === 'dislikes' ? 'active' : ''}" onclick="addReaction('${post.id}', 'dislikes')">
+                                        👎 <span class="reaction-count">${reactions.dislikes}</span>
+                                    </button>
+                                </div>
+                                
+                                <a href="post.html?id=${post.id}" class="read-more">Читать далее →</a>
+                            </div>
+                            ${previewImage ? `
+                            <div class="post-preview-image">
+                                <img src="${previewImage}" alt="${post.title}" 
+                                     onclick="openFullscreen('${previewImage}', '${post.title}')">
+                            </div>
+                            ` : ''}
+                        </div>
+                    `;
+                    dynamicPosts.appendChild(postElement);
+                });
+            }
+
+            renderPagination() {
+                const totalPages = Math.ceil(this.posts.length / this.postsPerPage);
+                const paginationTop = document.getElementById('pagination-top');
+                const paginationBottom = document.getElementById('pagination-bottom');
+                
+                if (totalPages <= 1) {
+                    paginationTop.innerHTML = '';
+                    paginationBottom.innerHTML = '';
+                    return;
+                }
+                
+                const paginationHTML = this.createPaginationHTML(totalPages);
+                paginationTop.innerHTML = paginationHTML;
+                paginationBottom.innerHTML = paginationHTML;
+            }
+
+            createPaginationHTML(totalPages) {
+                let html = '';
+                
+                if (this.currentPage > 1) {
+                    html += `<button class="page-btn" onclick="blogPagination.goToPage(${this.currentPage - 1})">← Назад</button>`;
+                } else {
+                    html += `<button class="page-btn disabled">← Назад</button>`;
+                }
+                
+                const startPage = Math.max(1, this.currentPage - 2);
+                const endPage = Math.min(totalPages, startPage + 4);
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    if (i === this.currentPage) {
+                        html += `<button class="page-btn active">${i}</button>`;
+                    } else {
+                        html += `<button class="page-btn" onclick="blogPagination.goToPage(${i})">${i}</button>`;
+                    }
+                }
+                
+                if (this.currentPage < totalPages) {
+                    html += `<button class="page-btn" onclick="blogPagination.goToPage(${this.currentPage + 1})">Вперед →</button>`;
+                } else {
+                    html += `<button class="page-btn disabled">Вперед →</button>`;
+                }
+                
+                return html;
+            }
+
+            goToPage(page) {
+                this.currentPage = page;
+                this.renderPage();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            changeSort(sortType) {
+                this.currentSort = sortType;
+                this.currentPage = 1;
+                
+                document.querySelectorAll('.sort-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelector(`[data-sort="${sortType}"]`).classList.add('active');
+                
+                this.applySorting();
+                this.renderPage();
+            }
+
+            setupEventListeners() {
+                document.querySelectorAll('.sort-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.changeSort(btn.dataset.sort);
+                    });
+                });
+            }
+        }
+
+        const blogPagination = new BlogPagination();
+
+        function addReaction(postId, type) {
+            const result = reactionsSystem.addReaction(postId, type);
+            updateReactionDisplay(postId, result.reactions, result.userVote);
+            
+            const btn = event.target.closest('.reaction-btn');
+            btn.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                btn.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        function updateReactionDisplay(postId, reactions, userVote = null) {
+            const postElement = document.querySelector(`[onclick="addReaction('${postId}', 'likes')"]`)?.closest('.post-preview');
+            if (!postElement) return;
+            
+            const likeBtn = postElement.querySelector('.like-btn');
+            const dislikeBtn = postElement.querySelector('.dislike-btn');
+            const likeCount = postElement.querySelector('.like-btn .reaction-count');
+            const dislikeCount = postElement.querySelector('.dislike-btn .reaction-count');
+            
+            likeCount.textContent = reactions.likes;
+            dislikeCount.textContent = reactions.dislikes;
+            
+            likeBtn.classList.remove('active');
+            dislikeBtn.classList.remove('active');
+            
+            if (userVote === null) {
+                userVote = reactionsSystem.getUserVote(postId);
+            }
+            
+            if (userVote === 'likes') {
+                likeBtn.classList.add('active');
+            } else if (userVote === 'dislikes') {
+                dislikeBtn.classList.add('active');
+            }
+        }
+
+       function openFullscreen(imgSrc, altText) {
+    // Блокируем скролл
+    document.body.classList.add('no-scroll');
+    
+    const fullscreenDiv = document.createElement('div');
+    fullscreenDiv.className = 'image-fullscreen';
+    fullscreenDiv.innerHTML = `
+        <button class="image-fullscreen-close" onclick="closeFullscreen()">×</button>
+        <img src="${imgSrc}" alt="${altText}">
+    `;
+    
+    document.body.appendChild(fullscreenDiv);
+    
+    // Закрытие по клику на фон
+    fullscreenDiv.addEventListener('click', function(e) {
+        if (e.target === fullscreenDiv) {
+            closeFullscreen();
+        }
+    });
+    
+    // Закрытие по ESC
+    document.addEventListener('keydown', function closeOnEsc(e) {
+        if (e.key === 'Escape') {
+            closeFullscreen();
+            document.removeEventListener('keydown', closeOnEsc);
+        }
+    });
+}
+
+function closeFullscreen() {
+    const fullscreen = document.querySelector('.image-fullscreen');
+    if (fullscreen) {
+        fullscreen.remove();
+        // Разблокируем скролл
+        document.body.classList.remove('no-scroll');
+    }
+}
+        
+        function closeFullscreen() {
+            const fullscreen = document.querySelector('.image-fullscreen');
+            if (fullscreen) {
+                fullscreen.remove();
+                document.body.style.overflow = '';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                const posts = JSON.parse(localStorage.getItem('blogPosts')) || [];
+                posts.forEach(post => {
+                    const reactions = reactionsSystem.getReactions(post.id);
+                    const userVote = reactionsSystem.getUserVote(post.id);
+                    updateReactionDisplay(post.id, reactions, userVote);
+                });
+            }, 100);
+
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('post-preview-image') || 
+                    e.target.parentElement.classList.contains('post-preview-image')) {
+                    const img = e.target.tagName === 'IMG' ? e.target : e.target.querySelector('img');
+                    if (img) {
+                        openFullscreen(img.src, img.alt);
+                    }
+                }
+            });
+        });
+    </script>
+
+    <script>
+        // Динамическая регулировка отступов для закрепленной шапки
+        function updateHeaderHeights() {
+            const header = document.querySelector('header');
+            const nav = document.querySelector('nav');
+            const main = document.querySelector('main');
+            
+            if (header && nav && main) {
+                const headerHeight = header.offsetHeight;
+                const navHeight = nav.offsetHeight;
+                
+                document.body.style.paddingTop = headerHeight + 'px';
+                nav.style.top = headerHeight + 'px';
+                main.style.marginTop = navHeight + 20 + 'px';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            updateHeaderHeights();
+            window.addEventListener('resize', updateHeaderHeights);
+            setTimeout(updateHeaderHeights, 200);
+        });
+    </script>
+</body>
+</html>

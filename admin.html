@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель блога</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-panel {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .admin-section {
+            background: #17212b;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            border: 1px solid #1a2837;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            color: #7f91a4;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            background: #1a2837;
+            border: 1px solid #2a3b4d;
+            border-radius: 6px;
+            color: #e6e6e6;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #5682a3;
+        }
+        
+        textarea.form-control {
+            min-height: 200px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: #5682a3;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+        
+        .btn:hover {
+            background: #6b9bc7;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+        }
+        
+        .btn-success:hover {
+            background: #219653;
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+        
+        .posts-list {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .post-item {
+            background: #1a2837;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #2a3b4d;
+        }
+        
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .post-title {
+            color: #ffffff;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .post-date {
+            color: #7f91a4;
+            font-size: 0.8rem;
+        }
+        
+        .post-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .alert-error {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .file-input-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .file-input {
+            flex: 1;
+        }
+        
+        .file-browse-btn {
+            background: #34495e;
+            padding: 0.75rem 1rem;
+        }
+        
+        .media-preview {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: #1a2837;
+            border-radius: 4px;
+            border: 1px solid #2a3b4d;
+        }
+        
+        .media-preview img, .media-preview video, .media-preview audio {
+            max-width: 100px;
+            max-height: 100px;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .current-date {
+            background: #27ae60;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Админ-панель блога</h1>
+        <p>Управление контентом</p>
+    </header>
+
+    <nav>
+        <a href="index.html">На сайт</a>
+        <a href="#posts">Все посты</a>
+        <a href="#new-post">Новый пост</a>
+    </nav>
+
+    <main class="admin-panel">
+        <div id="alert" class="alert hidden"></div>
+
+        <!-- Секция создания нового поста -->
+        <section id="new-post" class="admin-section">
+            <h2>Создать новый пост</h2>
+            <form id="post-form">
+                <div class="form-group">
+                    <label for="post-title">
+                        Заголовок поста 
+                        <span style="color: #e74c3c;">*</span>
+                    </label>
+                    <input type="text" id="post-title" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="post-date">
+                        Дата публикации 
+                        <span class="current-date" id="current-date-display">Сегодня</span>
+                    </label>
+                    <input type="date" id="post-date" class="form-control">
+                </div>
+                
+                <div class="form-group">
+                    <label for="post-preview">
+                        Превью текст (отображается в списке) 
+                        <span style="color: #e74c3c;">*</span>
+                    </label>
+                    <textarea id="post-preview" class="form-control" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="post-content">
+                        Полный текст поста (HTML разрешен) 
+                        <span style="color: #e74c3c;">*</span>
+                    </label>
+                    <textarea id="post-content" class="form-control" required></textarea>
+                </div>
+                
+                <!-- Медиа файлы -->
+                <div class="form-group">
+                    <label>Медиа файлы</label>
+                    
+                    <!-- Превью картинка -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: #7f91a4;">
+                            📷 Превью картинка (обязательно, показывается в списке постов) 
+                            <span style="color: #e74c3c;">*</span>
+                        </label>
+                        <div class="file-input-group">
+                            <input type="text" id="post-preview-image" class="form-control file-input" placeholder="images/preview.jpg" required>
+                            <button type="button" class="btn file-browse-btn" onclick="browseFile('post-preview-image', 'image/*')">Обзор</button>
+                        </div>
+                        <div id="preview-image-preview" class="media-preview hidden"></div>
+                    </div>
+                    
+                    <!-- Дополнительные фото -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: #7f91a4;">
+                            🖼️ Дополнительные фото (необязательно, по одной в строке)
+                        </label>
+                        <div class="file-input-group">
+                            <textarea id="post-images" class="form-control file-input" placeholder="images/photo1.jpg&#10;images/photo2.jpg" rows="3"></textarea>
+                            <button type="button" class="btn file-browse-btn" onclick="browseMultipleFiles('post-images', 'image/*')">Добавить</button>
+                        </div>
+                        <div id="images-preview" class="media-preview hidden"></div>
+                    </div>
+                    
+                    <!-- Видео -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: #7f91a4;">
+                            🎥 Видео файлы (необязательно, по одному в строке)
+                        </label>
+                        <div class="file-input-group">
+                            <textarea id="post-videos" class="form-control file-input" placeholder="videos/video1.mp4" rows="2"></textarea>
+                            <button type="button" class="btn file-browse-btn" onclick="browseMultipleFiles('post-videos', 'video/*')">Добавить</button>
+                        </div>
+                        <div id="videos-preview" class="media-preview hidden"></div>
+                    </div>
+                    
+                    <!-- Аудио -->
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: #7f91a4;">
+                            🎵 Аудио файлы (необязательно, по одному в строке)
+                        </label>
+                        <div class="file-input-group">
+                            <textarea id="post-audios" class="form-control file-input" placeholder="audio/track1.mp3" rows="2"></textarea>
+                            <button type="button" class="btn file-browse-btn" onclick="browseMultipleFiles('post-audios', 'audio/*')">Добавить</button>
+                        </div>
+                        <div id="audios-preview" class="media-preview hidden"></div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button type="submit" class="btn" id="submit-btn">📝 Опубликовать пост</button>
+                    <button type="button" class="btn btn-success" onclick="setTodayDate()">📅 Сегодняшняя дата</button>
+                    <button type="button" class="btn btn-warning hidden" id="cancel-edit-btn" onclick="admin.cancelEdit()">❌ Отменить редактирование</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Секция списка постов -->
+        <section id="posts" class="admin-section">
+            <h2>Все посты</h2>
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                <button onclick="admin.clearAllPosts()" class="btn btn-danger">🗑️ Очистить все посты</button>
+                <button onclick="admin.convertOldPosts()" class="btn btn-success">🔄 Конвертировать старые посты</button>
+            </div>
+            <div id="posts-list" class="posts-list">
+                <!-- Посты будут загружаться здесь -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Скрытый input для выбора файлов -->
+    <input type="file" id="file-input" class="hidden" accept="*/*" multiple>
+
+    <footer>
+        <p>© 2024 Админ-панель блога</p>
+    </footer>
+
+    <script src="admin.js"></script>
+    <script>
+        // Функции для работы с файлами
+        function browseFile(targetInputId, acceptTypes) {
+            const fileInput = document.getElementById('file-input');
+            fileInput.accept = acceptTypes;
+            fileInput.multiple = false;
+            
+            fileInput.onchange = function(e) {
+                if (e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    const fileName = getFilePath(file);
+                    document.getElementById(targetInputId).value = fileName;
+                    updateMediaPreview(targetInputId, fileName);
+                }
+            };
+            
+            fileInput.click();
+        }
+        
+        function browseMultipleFiles(targetTextareaId, acceptTypes) {
+            const fileInput = document.getElementById('file-input');
+            fileInput.accept = acceptTypes;
+            fileInput.multiple = true;
+            
+            fileInput.onchange = function(e) {
+                if (e.target.files.length > 0) {
+                    const textarea = document.getElementById(targetTextareaId);
+                    const currentValue = textarea.value.trim();
+                    const newFiles = Array.from(e.target.files).map(file => getFilePath(file));
+                    const allFiles = currentValue ? currentValue.split('\n').concat(newFiles) : newFiles;
+                    
+                    // Убираем дубликаты
+                    const uniqueFiles = [...new Set(allFiles.filter(file => file.trim()))];
+                    textarea.value = uniqueFiles.join('\n');
+                    updateMediaPreview(targetTextareaId, uniqueFiles);
+                }
+            };
+            
+            fileInput.click();
+        }
+        
+        function getFilePath(file) {
+            const folder = getFileFolder(file.type);
+            return `${folder}/${file.name}`;
+        }
+        
+        function getFileFolder(fileType) {
+            if (fileType.startsWith('image/')) return 'images';
+            if (fileType.startsWith('video/')) return 'videos';
+            if (fileType.startsWith('audio/')) return 'audio';
+            return 'files';
+        }
+        
+        function updateMediaPreview(targetId, files) {
+            const previewId = targetId + '-preview';
+            const preview = document.getElementById(previewId);
+            
+            if (!files || (Array.isArray(files) && files.length === 0)) {
+                preview.classList.add('hidden');
+                return;
+            }
+            
+            let previewHTML = '';
+            const fileArray = Array.isArray(files) ? files : [files];
+            
+            fileArray.forEach(file => {
+                if (file.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp)$/)) {
+                    previewHTML += `<img src="${file}" alt="Preview" onerror="this.style.display='none'">`;
+                } else if (file.toLowerCase().match(/\.(mp4|webm|ogg)$/)) {
+                    previewHTML += `<video controls><source src="${file}"></video>`;
+                } else if (file.toLowerCase().match(/\.(mp3|wav|ogg)$/)) {
+                    previewHTML += `<audio controls><source src="${file}"></audio>`;
+                } else {
+                    previewHTML += `<div>📄 ${file.split('/').pop()}</div>`;
+                }
+            });
+            
+            preview.innerHTML = previewHTML;
+            preview.classList.remove('hidden');
+        }
+        
+        function setTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('post-date').value = today;
+            document.getElementById('current-date-display').textContent = 'Сегодня';
+        }
+        
+        // Установка сегодняшней даты по умолчанию
+        document.addEventListener('DOMContentLoaded', function() {
+            setTodayDate();
+            
+            // Обновление отображения даты при изменении
+            document.getElementById('post-date').addEventListener('change', function() {
+                const selectedDate = this.value;
+                const today = new Date().toISOString().split('T')[0];
+                if (selectedDate === today) {
+                    document.getElementById('current-date-display').textContent = 'Сегодня';
+                } else {
+                    document.getElementById('current-date-display').textContent = 'Выбрана';
+                }
+            });
+            
+            // Предпросмотр при вводе URL вручную
+            document.getElementById('post-preview-image').addEventListener('input', function() {
+                updateMediaPreview('post-preview-image', this.value);
+            });
+            
+            document.getElementById('post-images').addEventListener('input', function() {
+                const files = this.value.split('\n').filter(f => f.trim());
+                updateMediaPreview('post-images', files);
+            });
+        });
+    </script>
+</body>
+</html>
